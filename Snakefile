@@ -1,30 +1,49 @@
 import os
 import shutil
+import pandas as pd
+import glob
 
+configfile: "/home/shamlym/workspace/klima-kverna/KAPy/config/testcase_2.yaml"
 # Input and output directories
-INPUT_DIR = "/home/shamlym/workspace/klima-kverna/nc/"
-OUTPUT_DIR = "/home/shamlym/workspace/klima-kverna/nc/valid/"
-
+# INPUT_DIR = "/home/shamlym/workspace/klima-kverna/nc/"
+OUTPUT_DIR = "/home/shamlym/workspace/klima-kverna/nc/valid"
+INPUT_DIR = config['sample_table']
 # Create output directory if it doesn't exist
-if not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR)
+# if not os.path.exists(OUTPUT_DIR):
+#     os.makedirs(OUTPUT_DIR)
 
-# Get a list of .nc files from the input directory
-nc_files = [f.split(".")[0] for f in os.listdir(INPUT_DIR) if f.endswith(".nc4")]
+# # Get a list of .nc files from the input directory
+# nc_files = [f.split(".")[0] for f in os.listdir(INPUT_DIR) if f.endswith(".nc4")]
 
+df = pd.read_csv(INPUT_DIR, sep='\t')
+
+# Initialize a list to store all file paths
+all_file_paths = []
+
+# Iterate over each row in the DataFrame
+for index, row in df.iterrows():
+    file_pattern = row['path']  # 'path' is the column in the TSV
+    matching_files = glob.glob(file_pattern, recursive=True)
+
+    for file_path in matching_files:
+        file_base, _ = os.path.splitext(file_path)  # Discard the extension
+        all_file_paths.append(file_base)  # Append the file name without extension
+    
+
+print(all_file_paths)
 # Rules
 rule all :
     input:
-        expand(os.path.join(OUTPUT_DIR, "{filename}.xml"), filename=nc_files)
+        expand(os.path.join(OUTPUT_DIR, "{filename}.xml") , filename=all_file_paths)
 
 rule validate_and_move:
     input:
-        os.path.join(INPUT_DIR, "{filename}.nc4")
+        "{filename}.nc4"
     output:
         os.path.join(OUTPUT_DIR, "{filename}.xml")
     shell:
         """
-         logdir="{INPUT_DIR}/logs/{wildcards.filename}.txt"
+         logdir="logs/{wildcards.filename}.txt"
         
         # Create the log directory if it does not exist
         mkdir -p "$(dirname "$logdir")"
