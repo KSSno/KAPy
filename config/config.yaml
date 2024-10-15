@@ -19,6 +19,7 @@ dirs:
     ensstats: 'results/4.ensstats'
     arealstats: 'results/5.areal_statistics'
     plots: 'results/6.plots'
+    netcdf: 'results/7.netcdf'
 
 # Configuration options------------------------------------
 arealstats:

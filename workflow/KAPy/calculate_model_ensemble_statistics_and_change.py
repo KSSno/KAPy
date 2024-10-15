@@ -5,8 +5,9 @@ from glob import glob
 import xarray as xr
 from xclim import ensembles
 import yaml
-from KAPy.workflow.KAPy.save_change_to_netcdf import save_change_to_netcdf
-from KAPy.workflow.KAPy.plots import makeBoxplot
+
+from KAPy.save_change_to_netcdf import save_change_to_netcdf
+from KAPy.plots import makeBoxplot
 
 
 def calculate_ensemble_mean(
@@ -15,11 +16,11 @@ def calculate_ensemble_mean(
     current_dir = Path(__file__).parent
     if "hist" not in scenario:
         periods = [2, 3]
-        search_dir = current_dir / "results/7.netcdf"
+        search_dir = current_dir / "../../results/7.netcdf"
         netcdf_files = glob(f"{search_dir}/**/{indicator_id}_{scenario}*.nc", recursive=True)
     else:
         periods = [1, 2, 3]
-        search_dir = current_dir / "results/4.ensstats"
+        search_dir = current_dir / "../../results/4.ensstats"
 
         match CMIP_version:
             case 6:
@@ -152,8 +153,8 @@ if __name__ == "__main__":
     units = "kg m-2 s-1"
     indicator_name = "Annual mean precipitation by period"
 
-    path_to_config = current_dir / "config/config_testcase_1.yaml"
-    path_to_periods = current_dir / "config/periods_testcase_1.tsv"
+    path_to_config = current_dir / "../../config/config_testcase_1.yaml"
+    path_to_periods = current_dir / "../../config/periods_testcase_1.tsv"
 
     # Create config for this scenario/CMIP version, periods and indicator
     config, scenarios, CMIP_version = create_config(
@@ -163,7 +164,7 @@ if __name__ == "__main__":
     # Note on csv filenames:
     # scenario has to be the third word, since makeBoxplot uses the third word in the filename
     # for mapping the scenarios in the legend
-    path_to_save_netcdf = current_dir / f"testcase_1_results/model_ensembles/CMIP{CMIP_version}"
+    path_to_save_netcdf = current_dir / f"../../../output/testcase_1/model_ensembles/CMIP{CMIP_version}"
     statistics_filenames = [
         path_to_save_netcdf / f"{scenario}/{indicator_id}_{scenario}_ensemble_statistics.nc" for scenario in scenarios
     ]
