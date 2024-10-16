@@ -19,7 +19,7 @@ dirs:
     ensstats: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/4.ensstats/time_binning_periods/cnrm_hclim'
     arealstats: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/5.areal_statistics/time_binning_periods/cnrm_hclim'
     plots: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/6.plots/cnrm_hclim'
-    netcdf: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/7.netcdf/cnrm_hclim'
+    netcdf: '/lustre/storeC-ext/users/klimakverna/development/output/testcase_1/cnrm_hclim'
 
 # Configuration options------------------------------------
 arealstats:
