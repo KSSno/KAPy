@@ -12,7 +12,7 @@ Our full pipeline with intended test cases is seen below:
 
 ## Activate environment
 
-Source conda by 
+Source conda on PPI store-C by 
 ```console
 source /modules/centos7/conda/prod_04_2021/etc/profile.d/conda.sh
 ```
@@ -86,38 +86,45 @@ The output files from one calculation is saved in `.../klimakverna/development/K
 
 The steps in a calculation are
 
-### 1. Variables
+1. #### Variables
 `.../klimakverna/development/KAPy/results/1.variables`  
 [netcdf] x the total number of years in the period range  
+
 The primary variables (uncertain how different these files are compared to the input files except for the geographical cutout, maybe store as pickle in the future).
 
-### 2. Indicators
+2. #### Indicators
 `.../klimakverna/development/KAPy/results/2.indicators`  
 [netcdf] x the total number of years in the period range  
+
 The calculated climate indicators.
 
-### 3. Regridding
+3. #### Regridding
 `.../klimakverna/development/KAPy/results/3.commmon_grid`  
+
 Regridding step, not used yet, assumed all input files are on the same grid  
 
-### 4. Ensemble statistics
+4. #### Ensemble statistics
 `.../klimakverna/development/KAPy/results/4.ensstats`  
 [netcdf] x 1   
+
 Ensemble statistics, calculation of statistics for each period. For instance average of one indicator over years in one period
 
-### 5. Areal statistics
+5. #### Areal statistics
 `.../klimakverna/development/KAPy/results/5.areal_statistics`   
 [csv] x 1   
+
 Areal statistics, average over the whole geographical area and all the years in one period
 
-### 6. Plots
+6. #### Plots
 `.../klimakverna/development/KAPy/results/6.plots`  
 [png] x 1  
+
 Plots. One box plot when time binning is equal to periods, uses the csv file in the previous step directly
 
-### 7. Netcdf
+7. #### Netcdf
 `.../klimakverna/development/KAPy/results/7.netcdf`  
 [netcdf] x 1  
+
 Calculated relative change from historical period to each of the other periods. Average over periods, not geographically
 
 A new rule was added to the Snakefile in testcase 1, this rule saves datasets as netcdf and is called `save_change_to_netcdf`.
