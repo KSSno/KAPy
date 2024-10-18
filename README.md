@@ -125,7 +125,7 @@ The steps in a calculation are
     `.../klimakverna/development/KAPy/results/7.netcdf`  
     [netcdf] x 1  
 
-Calculated relative change from historical period to each of the other periods. Average over periods, not geographically
+    Calculated relative change from historical period to each of the other periods. Average over periods, not geographically
 
 A new rule was added to the Snakefile in testcase 1, this rule saves datasets as netcdf and is called `save_change_to_netcdf`.
 At the same time, the `plots_spatial` rule was deactivated as it used a lot of memory and produced error messages. `.../klimakverna/development/KAPy/workflow/KAPy/plot_change.py` was added to plot the spatial plot in stead, but it is not added as a rule, so it won't run automatically.
