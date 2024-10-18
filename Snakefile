@@ -3,10 +3,10 @@ import shutil
 import pandas as pd
 import glob
 
-configfile: "/home/shamlym/workspace/klima-kverna/KAPy/config/testcase_2.yaml"
+configfile: "config/testcase_2.yaml"
 # Input and output directories
 # INPUT_DIR = "/home/shamlym/workspace/klima-kverna/nc/"
-OUTPUT_DIR = "/home/shamlym/workspace/klima-kverna/nc/valid"
+OUTPUT_DIR = "results"
 INPUT_DIR = config['sample_table']
 # Create output directory if it doesn't exist
 # if not os.path.exists(OUTPUT_DIR):
@@ -34,13 +34,15 @@ print(all_file_paths)
 # Rules
 rule all :
     input:
-        expand(os.path.join(OUTPUT_DIR, "{filename}.xml") , filename=all_file_paths)
+        expand(os.path.join(OUTPUT_DIR, "{filename}.xml") , filename=all_file_paths),
+        expand(os.path.join(OUTPUT_DIR, "{filename}.nc4") , filename=all_file_paths)
 
 rule validate_and_move:
     input:
         "{filename}.nc4"
     output:
-        os.path.join(OUTPUT_DIR, "{filename}.xml")
+        xml_output = os.path.join(OUTPUT_DIR, "{filename}.xml"),
+        nc_output = os.path.join(OUTPUT_DIR, "{filename}.nc4")
     shell:
         """
          logdir="logs/{wildcards.filename}.txt"
@@ -53,6 +55,10 @@ rule validate_and_move:
         # Check if the output is not empty
         if [[ -n "$output" && "$output" =~ [^[:space:]] ]]; then
             echo "$output" > "$logdir"
+        else
+            # If no output, copy the input file to the output directory
+            cp {input} {OUTPUT_DIR}
+            echo "Copied {input} to {output.nc_output}" > "$logdir"
         fi
 
         """
