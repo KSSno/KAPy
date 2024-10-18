@@ -10,12 +10,25 @@ Our full pipeline with intended test cases is seen below:
 
 # Getting started
 
-1. ## Activate environment
+## 1. Activate environment
 
-    Source conda by ```source /modules/centos7/conda/prod_04_2021/etc/profile.d/conda.sh```
-    Activate environment for KAPy by go to `/lustre/storeC-ext/users/klimakverna/development/conda` and run ```source activate KAPy``` or run ```conda activate /lustre/storeC-ext/users/klimakverna/development/conda/KAPy``` from anywhere.
+    Source conda by 
+    ```
+    source /modules/centos7/conda/prod_04_2021/etc/profile.d/conda.sh
+    ```
 
-2. ## Configuration
+    Activate environment for KAPy by go to `/lustre/storeC-ext/users/klimakverna/development/conda` and run 
+    ```
+    source activate KAPy
+    ``` 
+    or run 
+    ```
+    conda activate /lustre/storeC-ext/users/klimakverna/development/conda/KAPy
+    ```
+    
+    from anywhere.
+
+## 2. Configuration
 
     Configuration in KAPy is located in the `.../klimakverna/development/KAPy/config` directory, where the different files are
 
@@ -34,52 +47,70 @@ Our full pipeline with intended test cases is seen below:
 
     Which configuration files to use in the calculation are set in `config.yaml` and which configuration to use is set in line 20 in the Snakefile, `.../klimakverna/development/KAPy/workflow/Snakefile`. 
 
-3. ## Run calculation
+## 3. Run calculation
     
-    To check that configuration is valid and how many output files that will be generated, a dry run in snakemake is run by ```snakemake -n``` in the terminal. If everything is ok, the calculation is started by ```snakemake --cores 1``` in the terminal for a small calculation or by submitting a job to the PPI queue for a larger job.
+    To check that configuration is valid and how many output files that will be generated, a dry run in snakemake is run by 
+    ```
+    snakemake -n
+    ```
+    
+    in the terminal. If everything is ok, the calculation is started by
+    ```
+    snakemake --cores 1
+    ```
+    
+    in the terminal for a small calculation or by submitting a job to the PPI queue for a larger job.
     
     A job script is found in `.../klimakverna/development/KAPy/workflow/run_snakemake.sh`, change the email to your own. The output and error messages from the job will appear in `.../klimakverna/development/jobs`, where the `ERR_KAPy` files contain what snakemake prints during a job.
     
-    To submit a job, use ```qsub -V -b n -cwd /lustre/storeC-ext/users/klimakverna/development/KAPy/workflow/run_snakemke.sh``` and to see status of the submitted job use ```qstat -q all.q -u <user name>``` 
+    To submit a job, use
+    ```
+    qsub -V -b n -cwd /lustre/storeC-ext/users/klimakverna/development/KAPy/workflow/run_snakemke.sh
+    ```
+    
+    and to see status of the submitted job use
+    ```
+    qstat -q all.q -u <user name>
+    ``` 
 
-4. ## Output
+## 4. Output
     
     The output files from one calculation is saved in `.../klimakverna/development/KAPy/results`, where the different subdirectories correspond to the steps in the calculation. A subdirectory that notes the time binning was added to separate the different outputs when time binning is changed as snakemake doesn't recognize the difference. If a calculation was already done with time binning set to periods, and then time binning was changed to years, snakemake didn't recalculate the indicators. 
     
     The steps in a calculation are
     
-    1. ### Variables
-        `.../klimakverna/development/KAPy/results/1.variables`
-        [netcdf] x the total number of years in the period range
+    ### 1. Variables
+        `.../klimakverna/development/KAPy/results/1.variables`  
+        [netcdf] x the total number of years in the period range  
         The primary variables (uncertain how different these files are compared to the input files except for the geographical cutout, maybe store as pickle in the future).
     
-    2. ### Indicators
-        `.../klimakverna/development/KAPy/results/2.indicators`
-        [netcdf] x the total number of years in the period range
+    ### 2. Indicators
+        `.../klimakverna/development/KAPy/results/2.indicators`  
+        [netcdf] x the total number of years in the period range  
         The calculated climate indicators.
     
-    3. ### Regridding
-        `.../klimakverna/development/KAPy/results/3.commmon_grid`
-        Regridding step, not used yet, assumed all input files are on the same grid
+    ### 3. Regridding
+        `.../klimakverna/development/KAPy/results/3.commmon_grid`  
+        Regridding step, not used yet, assumed all input files are on the same grid  
     
-    4. ### Ensemble statistics
-         `.../klimakverna/development/KAPy/results/4.ensstats`
-        [netcdf] x 1 
+    ### 4. Ensemble statistics
+         `.../klimakverna/development/KAPy/results/4.ensstats`  
+        [netcdf] x 1   
         Ensemble statistics, calculation of statistics for each period. For instance average of one indicator over years in one period
 
-    5. ### Areal statistics
-        `.../klimakverna/development/KAPy/results/5.areal_statistics` 
-        [csv] x 1 
+    ### 5. Areal statistics
+        `.../klimakverna/development/KAPy/results/5.areal_statistics`   
+        [csv] x 1   
         Areal statistics, average over the whole geographical area and all the years in one period
 
-    6. ### Plots
-        `.../klimakverna/development/KAPy/results/6.plots`
-        [png] x 1
+    ### 6. Plots
+        `.../klimakverna/development/KAPy/results/6.plots`  
+        [png] x 1  
         Plots. One box plot when time binning is equal to periods, uses the csv file in the previous step directly
 
-    7. ### Netcdf
-        `.../klimakverna/development/KAPy/results/7.netcdf`
-        [netcdf] x 1
+    ### 7. Netcdf
+        `.../klimakverna/development/KAPy/results/7.netcdf`  
+        [netcdf] x 1  
         Calculated relative change from historical period to each of the other periods. Average over periods, not geographically
 
     A new rule was added to the Snakefile in testcase 1, this rule saves datasets as netcdf and is called `save_change_to_netcdf`.
