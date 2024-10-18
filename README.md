@@ -9,6 +9,8 @@ Our full pipeline with intended test cases is seen below:
 ![Flow chart with test cases Klimakverna](./flowchart.png)
 
 # Getting started
+Source conda by `source /modules/centos7/conda/prod_04_2021/etc/profile.d/conda.sh`. Activate environment for KAPy by go to `/lustre/storeC-ext/users/klimakverna/development/conda` and run `source activate KAPy` or run `conda activate /lustre/storeC-ext/users/klimakverna/development/conda/KAPy` from anywhere.
+
 (...)
 
 # Git guidelines

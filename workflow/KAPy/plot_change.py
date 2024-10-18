@@ -39,7 +39,7 @@ def plot_and_save_change(model: str, indicator_id: str):
         return
 
     path_to_netcdfs = Path(f"/lustre/storeC-ext/users/klimakverna/development/KAPy/results/7.netcdf/{model}")
-    path_to_save_figures = Path(f"/lustre/storeC-ext/users/klimakverna/development/KAPy/testcase_1_results/{model}")
+    path_to_save_figures = Path(f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_1/{model}")
     files = [f"{path_to_netcdfs}/{indicator_id}_{scenario}_change_periods.nc" for scenario in scenarios]
 
     cmap = plt.cm.PuOr
@@ -75,6 +75,6 @@ def plot_and_save_change(model: str, indicator_id: str):
 
 
 if __name__ == "__main__":
-    model = "cnrm_hclim"
+    model = "cnrm_aladin"
     indicator = "102"
     plot_and_save_change(model, indicator)
