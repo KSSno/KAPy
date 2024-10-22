@@ -1,3 +1,3 @@
 id	srcName	varName	path	stemRegex	internalVarName	hasScenarios	applyPreprocessor	preprocessorPath	preprocessorFunction
 
-CMIP6-MET-cnrm_hclim-pr	CMIP6	pr	/home/shamlym/workspace/klima-kverna/nc/cnrm-r1i1p1f2-hclim/pr/[shk][sip][ps4][3tc]*/*_????.nc4	(.*).nc4	pr	TRUE	FALSE
+CMIP6-MET-cnrm_hclim-pr	CMIP6	pr	/lustre/storeC-ext/users/kin2100/NVE/EQM/CMIP6/*/pr/*/*nc4  	(.*).nc4	pr	TRUE	FALSE
