@@ -1,4 +1,4 @@
-sample_table: "config/testcase_2.tsv"
+input_json: "config/testcase_2.json"
 mmd_output: "/lustre/storeC-ext/users/klimakverna/development/output/testcase_2/mmd"
 nc_output: "/lustre/storeC-ext/users/klimakverna/development/output/testcase_2"
 input_base: "/lustre/storeC-ext/users/kin2100/"

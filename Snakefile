@@ -2,23 +2,27 @@ import os
 import shutil
 import pandas as pd
 import glob
+import json
+
 
 configfile: "config/testcase_2.yaml"
 
 MMD_OUT_DIR = config['mmd_output']
 NC_OUT_DIR = config['nc_output']
-INPUT_DIR = config['sample_table']
+
+INPUT_DIR = config['input_json']
 INPUT_BASE = config['input_base']
 
+with open(INPUT_DIR, 'r') as f:
+    data = json.load(f) 
 
-df = pd.read_csv(INPUT_DIR, sep='\t')
+# Extract the list from the "file_pattern" key
+file_pattern_list = data['file_pattern']
 
 all_file_paths = []
 
-for index, row in df.iterrows():
-    file_pattern = row['path']  # 'path' is the column in the TSV
-    matching_files = glob.glob(file_pattern, recursive=True)
-
+for pattern in file_pattern_list:
+    matching_files = glob.glob(pattern, recursive=True)
     for file_path in matching_files:
         print(file_path)
         struct=os.path.relpath(file_path, INPUT_BASE)

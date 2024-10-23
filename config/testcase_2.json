@@ -1,0 +1,5 @@
+{
+    "file_pattern": [
+        "/lustre/storeC-ext/users/kin2100/NVE/EQM/CMIP6/*/pr/*/*nc4"
+    ]
+}
