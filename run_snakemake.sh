@@ -4,7 +4,7 @@
 #$ -l h_rt=24:00:00
 #$ -l h_rss=3G,mem_free=3G
 #$ -S /bin/bash
-#$ -q all.qls
+#$ -q all.q
 #$ -M shamlym@met.no
 #$ -m bae
 #$ -o /lustre/storeC-ext/users/klimakverna/development/jobs/OUT_$JOB_NAME.$JOB_ID
