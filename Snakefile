@@ -24,7 +24,6 @@ all_file_paths = []
 for pattern in file_pattern_list:
     matching_files = glob.glob(pattern, recursive=True)
     for file_path in matching_files:
-        print(file_path)
         struct=os.path.relpath(file_path, INPUT_BASE)
         file_base, _ = os.path.splitext(struct)  # Discard the extension
         all_file_paths.append(file_base)  # Append the file name without extension
