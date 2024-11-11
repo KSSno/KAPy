@@ -13,6 +13,6 @@ __pycache__
 .vscode
 
 .github
+.snakemake/*
 workflow/.snakemake
-testcase_1_results/model_ensembles/*/*.nc
-testcase_1_results/model_ensembles/*/*/*.nc
+logs/*
