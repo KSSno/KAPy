@@ -177,7 +177,7 @@ def makeLineplot(config, indID, srcFiles, outFile=None):
 
     # Get metafra data from configuration
     scTbl = pd.DataFrame.from_dict(config["scenarios"], orient="index")
-    scColourDict = {x["id"]: f"#{x["hexcolour"]}" for i, x in scTbl.iterrows()}
+    scColourDict = {x["id"]: f"#{x['hexcolour']}" for i, x in scTbl.iterrows()}
 
     # Now select data for plotting - we only plot the central value, not the full range
     pltDat = datdf[datdf["percentiles"] == config["ensembles"]["centralPercentile"]]

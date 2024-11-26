@@ -50,7 +50,7 @@ def calculateIndicators(config, inFile, outFile, indID):
             elif thisInd["statistic"] == "mean":
                 res = datPeriodSeason.mean("time", keep_attrs=True)
             else:
-                sys.exit(f"Unknown indicator statistic '{thisInd["statistic"]}'")
+                sys.exit(f"Unknown indicator statistic '{thisInd['statistic']}'")
                 # sys.exit('Unknown indicator statistic, "' + ind["statistic"] + '"')
             # Tidy output
             res["periodID"] = thisPeriod["id"]
