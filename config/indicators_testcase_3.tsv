@@ -1,7 +1,4 @@
 id	name	units	variables	season	statistic	time_binning
-#101	Monthly max temperature	K	tas	monthly	max	periods
-#102	Monthly min temperature	K	tas	monthly	min	periods
-#103	Monthly max precipitation by period	kg m-2 s-1	pr	max	periods
-#104	Monthly min precipitation by period	kg m-2 s-1	pr	min	periods
-#105	Monthly max air pressure	Pa	psl	monthly	max	periods
-#106	Monthly min air pressure	Pa	psl	monthly	min	periods
+101	Monthly mean temperature	K	tas	annual	mean	years
+102	Monthly mean precipitation by period	kg m-2 s-1	pr	annual	mean	years
+#103	Monthly mean air pressure	Pa	psl	annual	mean	years

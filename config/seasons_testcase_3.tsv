@@ -1,0 +1,6 @@
+id	name	months
+annual	Annual	1,2,3,4,5,6,7,8,9,10,11,12
+summer	Winter (DJF)	12,1,2
+autumn	Spring (MAM)	3,4,5
+winter	Summer (JJA)	6,7,8
+spring	Autumn (SON)	9,10,11
