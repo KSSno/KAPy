@@ -11,8 +11,8 @@
 #$ -e /lustre/storeC-ext/users/klimakverna/development/jobs/ERR_$JOB_NAME.$JOB_ID
 #$ -R y
 echo "*** Starting ***"
-source /modules/centos7/conda/prod_04_2021/etc/profile.d/conda.sh
-conda activate /lustre/storeC-ext/users/klimakverna/development/conda/KAPy
+#source /modules/centos7/conda/prod_04_2021/etc/profile.d/conda.sh
+#conda activate /lustre/storeC-ext/users/klimakverna/development/conda/KAPy
 echo "*** Running snakemake ***"
-snakemake --cores=3 --rerun-incomplete
+snakemake --cores=6 --rerun-incomplete
 echo "*** Done ***"
