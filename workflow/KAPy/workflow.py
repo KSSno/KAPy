@@ -35,8 +35,10 @@ def getWorkflow(config):
     inp = config["inputs"]
     ind = config["indicators"]
     sc = config["scenarios"]
+    region = config["region"]
     outDirs = config["dirs"]
-
+    periods = config["periods"]
+    
     # Primary Variables ---------------------------------------------------------------
     # PVs are the raw inputs. These need to be read into a single-file format based on
     # xarray, and are then exported either as netcdf or as pickles.
@@ -51,7 +53,7 @@ def getWorkflow(config):
         inpTbl["stems"] = [re.search(thisInp["stemRegex"], os.path.basename(x)).group(1) for x in inpTbl["inpPath"]]
 
         for indicator_id in ind:
-            if ind[indicator_id]["time_binning"] == "periods":
+            if ind[indicator_id]["time_binning"] == "periods" and len(sc) >= 3:
                 valid_periods = []
                 for period_id in config["periods"]:
                     valid_periods.append(
@@ -215,6 +217,7 @@ def getWorkflow(config):
     # Loop over available indicators to make plots
     pltDict = {}
     netcdf_paths = {}
+    region_paths = {}
     for thisInd in config["indicators"].values():
         # But what should we plot? It depends on the nature of the indicator
         # * Period-based indicators should plot the spatial map and the plots
@@ -229,12 +232,16 @@ def getWorkflow(config):
             # pltDict[spFname] = ensList[str(thisInd["id"])]
 
             # netcdf
-            for scenario in list(config["scenarios"].keys()):
+            input_list = inpTbl["inpPath"].to_list()
+            for scenario in sc:
                 if scenario == "historical":
                     continue
                 netcdf_paths[os.path.join(outDirs["netcdf"], f"{thisInd['id']}_{scenario}_change_periods.nc")] = (
                     ensList[str(thisInd["id"])]
                 )
+                for period in periods:
+                    for region_key in region:
+                        region_paths[os.path.join(outDirs["region"], f"{thisInd['id']}_{scenario}_{periods[period]['short_name']}_region_{region[region_key]['id']}.nc")] = [input_file for input_file in input_list if scenario in input_file]
 
         elif thisInd["time_binning"] in ["years", "months"]:
             # Time series plot
@@ -251,6 +258,7 @@ def getWorkflow(config):
         "arealstats": asDict,
         "plots": pltDict,
         "netcdf": netcdf_paths,
+        "region": region_paths
     }
     # Need to create an "all" dict as well containing all targets in the workflow
     allList = []

@@ -9,7 +9,20 @@ config=KAPy.getConfig("./config/config.yaml")
 wf=KAPy.getWorkflow(config)
 """
 
-from plotnine import *
+from plotnine import (
+    ggplot,
+    geom_boxplot,
+    geom_line,
+    aes,
+    scale_x_discrete,
+    labs,
+    scale_fill_manual,
+    theme_bw,
+    theme,
+    coord_cartesian,
+    element_blank,
+    scale_colour_manual
+    )
 import pandas as pd
 import os
 import matplotlib
