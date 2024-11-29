@@ -19,7 +19,8 @@
                 "indicators",
                 "scenarios",
                 "periods",
-                "seasons"
+                "seasons",
+                "region"
             ],
             "additionalProperties": false,
             "properties": {
@@ -46,6 +47,10 @@
                 "seasons": {
                     "description": "Path to season configuration table, relative to working directory. See [seasons.md](seasons.md) for more detail.",
                     "type": "string"
+                },
+                "region": {
+                    "description": "Path to region specificatio, relative to working directory.",
+                    "type": "string"
                 }
             }
         },
@@ -59,7 +64,8 @@
                 "ensstats",
                 "arealstats",
                 "plots",
-                "netcdf"
+                "netcdf",
+                "region"
             ],
             "additionalProperties": false,
             "properties": {
@@ -89,6 +95,10 @@
                 },
                 "netcdf": {
                     "description": "Directory for storing output netcdfs.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Directory for storing output netcdfs for region cutouts.",
                     "type": "string"
                 }
             }
