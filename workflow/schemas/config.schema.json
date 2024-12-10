@@ -57,15 +57,23 @@
         "dirs": {
             "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items",
             "type": "object",
-            "required": [
-                "variables",
-                "indicators",
-                "regridded",
-                "ensstats",
-                "arealstats",
-                "plots",
-                "netcdf",
-                "region"
+            "oneOf": [
+                {
+                    "required": [
+                        "variables",
+                        "indicators",
+                        "regridded",
+                        "ensstats",
+                        "arealstats",
+                        "plots",
+                        "netcdf"
+                    ]
+                },
+                {
+                    "required": [
+                        "region"
+                    ]
+                }
             ],
             "additionalProperties": false,
             "properties": {
