@@ -205,18 +205,20 @@ if config['outputGrid']['regriddingEngine']!='None':
 # Enssemble Statistics ---------------------------------
 # Now we can combine them into ensembles
 #Plural rule
-rule ensstats:
-    input:
-        list(wf['ensstats'].keys())
+if outDirs['ensstats']:
 
-#Singular rule
-rule ensstats_file:
-    output:
-        os.path.join(outDirs['ensstats'],"{es}")
-    input:
-        lambda wildcards: wf['ensstats'][os.path.join(outDirs['ensstats'],wildcards.es)]
-    run:
-        KAPy.generateEnsstats(config,input,output)
+    rule ensstats:
+        input:
+            list(wf['ensstats'].keys())
+
+    #Singular rule
+    rule ensstats_file:
+        output:
+            os.path.join(outDirs['ensstats'],"{es}")
+        input:
+            lambda wildcards: wf['ensstats'][os.path.join(outDirs['ensstats'],wildcards.es)]
+        run:
+            KAPy.generateEnsstats(config,input,output)
 
 
 # Areal statistics------------------
@@ -224,18 +226,20 @@ rule ensstats_file:
 #individual ensemble members - these options can be turned on and off as required
 #via the configuration options. 
 #Plural rule
-rule arealstats:
-    input:
-        list(wf['arealstats'].keys())
+if outDirs['arealstats']:
 
-#Singular rule
-rule arealstats_file:
-    output:
-        os.path.join(outDirs['arealstats'],'{arealstats}')
-    input:
-        lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'], wildcards.arealstats)]
-    run:
-        KAPy.generateArealstats(config,input,output)
+    rule arealstats:
+        input:
+            list(wf['arealstats'].keys())
+
+    #Singular rule
+    rule arealstats_file:
+        output:
+            os.path.join(outDirs['arealstats'],'{arealstats}')
+        input:
+            lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'], wildcards.arealstats)]
+        run:
+            KAPy.generateArealstats(config,input,output)
 
 # Outputs ---------------------------------
 # Plots, amongst other things
@@ -282,13 +286,15 @@ rule save_change_to_netcdf:
         KAPy.save_change_to_netcdf(config, wildcards.indicator, wildcards.scenario, input, output)
 
 # 30yr means for region-----------------------
-rule ensemble_stats_region:
-    input:
-        lambda wildcards: wf['region'][os.path.join(outDirs["region"], f'{wildcards.indID}_{wildcards.es}_{wildcards.period}_region_{wildcards.region}.nc')]
-    output:
-        os.path.join(outDirs['region'], '{indID}_{scenario}_{period}_region_{region}.nc')
-    run:
-        KAPy.save_region_ensemble_stats_to_netcdf(config, wildcards.indID, wildcards.es, wildcards.period, wildcards.region, input, str(output))
+if outDirs['region']:
+
+    rule ensemble_stats_region:
+        input:
+            lambda wildcards: wf['region'][os.path.join(outDirs["region"], f'{wildcards.indID}_{wildcards.scenario}_{wildcards.period}_region_{wildcards.region}.nc')]
+        output:
+            os.path.join(outDirs['region'], '{indID}_{scenario}_{period}_region_{region}.nc')
+        run:
+            KAPy.save_region_ensemble_stats_to_netcdf(config, wildcards.indID, wildcards.scenario, wildcards.period, wildcards.region, input, str(output))
 
 # All-------------------
 if config["region"]:
