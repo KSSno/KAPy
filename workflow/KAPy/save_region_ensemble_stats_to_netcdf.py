@@ -17,6 +17,7 @@ def save_region_ensemble_stats_to_netcdf(config: dict, indicator_id: str, scenar
         period: near future or far future
         region: id for region in shapefile defined in configuration file to cut out of input file and calculate ensemble statistics for
         inputs: original datasets with 30 year means
+        output: path to output directory including netcdf file name
     
     Returns:
         Nothing, but saves the ensemble statistics to netcdf for the input scenario, period and region, as well as a spatial plot
@@ -43,6 +44,7 @@ def save_region_ensemble_stats_to_netcdf(config: dict, indicator_id: str, scenar
     dataset_total = xr.merge([dataset_mean_std, dataset_precentiles])
     dataset_total.to_netcdf(output)
 
+    limit = [-15, 15]
     plt.figure()
-    dataset_total.pr_mean.plot()
-    plt.savefig(f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_6/cnrm_hclim/{indicator_id}_{scenario}_{period}_region_{region}_pr_mean.png")
+    dataset_total.pr_mean.plot(robust=True, vmin=limit[0], vmax=limit[-1])
+    plt.savefig(f"{output.split(indicator_id)[0]}/{indicator_id}_{scenario}_{period}_region_{region}_pr_mean.png")
