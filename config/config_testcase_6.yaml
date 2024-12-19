@@ -14,7 +14,7 @@ configurationTables:
     seasons: '/lustre/storeC-ext/users/klimakverna/development/kaja/KAPy/config/seasons.tsv'
     region: '/lustre/storeC-ext/users/klimakverna/development/kaja/KAPy/config/region_testcase_6.tsv'
 dirs:
-    region: '/lustre/storeC-ext/users/klimakverna/development/output/testcase_6/noresm-remo'
+    region: '/lustre/storeC-ext/users/klimakverna/development/output/testcase_6/noresm-hclim'
 
 # Configuration options------------------------------------
 arealstats:
