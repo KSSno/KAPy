@@ -288,13 +288,13 @@ rule save_change_to_netcdf:
 # 30yr means for region-----------------------
 if outDirs['region']:
 
-    rule ensemble_stats_region:
+    rule save_areal_mean_for_region_to_netcdf:
         input:
             lambda wildcards: wf['region'][os.path.join(outDirs["region"], f'{wildcards.indID}_{wildcards.scenario}_{wildcards.period}_region_{wildcards.region}.nc')]
         output:
             os.path.join(outDirs['region'], '{indID}_{scenario}_{period}_region_{region}.nc')
         run:
-            KAPy.save_region_ensemble_stats_to_netcdf(config, wildcards.indID, wildcards.scenario, wildcards.period, wildcards.region, input, str(output))
+            KAPy.save_areal_mean_for_region_to_netcdf(config, wildcards.indID, wildcards.scenario, wildcards.period, wildcards.region, input, str(output))
 
 # All-------------------
 if config["region"]:
