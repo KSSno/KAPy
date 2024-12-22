@@ -48,6 +48,9 @@ def getWorkflow(config):
         inpTbl = pd.DataFrame(glob.glob(thisInp["path"]), columns=["inpPath"])
 
         # Make into table and extract stems
+        #print("inpPath:", inpTbl["inpPath"])
+        #print(thisInp["stemRegex"])
+        #exit()
         inpTbl["stems"] = [re.search(thisInp["stemRegex"], os.path.basename(x)).group(1) for x in inpTbl["inpPath"]]
 
         for indicator_id in ind:

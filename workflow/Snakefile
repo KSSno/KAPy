@@ -18,7 +18,7 @@ import os
 #Setup-----------------------
 #Load configuration 
 #configfile: "/lustre/storeC-ext/users/klimakverna/development/KAPy/config/config_testcase_3.yaml"  #Defined relative to execution directory
-configfile: "/lustre/storeC-ext/users/klimakverna/development/tyge/KAPy/config/config_testcase_3.yaml"
+configfile: "/lustre/storeC-ext/users/klimakverna/development/tyge/KAPy/config/testcase_3/config.yaml"
 config = KAPy.validateConfig(config)
 outDirs = config['dirs']
 

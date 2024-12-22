@@ -52,7 +52,7 @@ def comparePrimVars(config, inFiles, outFile, inpID):
             # print(np.min(thisDs["lat"]))
             # print(np.max(thisDs["lat"]))
             dsList += [thisDs]
-        elif config["cutouts"]["method"] == "none":
+        elif config["cutouts"]["method"] == "None":
             # Load everything using xarray
             dsList += [xr.open_dataset(f)]
         else:
