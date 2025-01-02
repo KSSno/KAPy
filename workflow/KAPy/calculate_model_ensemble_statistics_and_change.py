@@ -283,12 +283,12 @@ if __name__ == "__main__":
             )
         else:
             # Antar at csvene exsisterer
-            csv_files_for_boxplot = ["/lustre/storeC-ext/users/klimakverna/development/output/testcase_6/model_ensembles/CMIP5/rcp26/102_ensemble_rcp26_statistics.csv",
-                                    "/lustre/storeC-ext/users/klimakverna/development/output/testcase_6/model_ensembles/CMIP5/rcp45/102_ensemble_rcp45_statistics.csv",
-                                    "/lustre/storeC-ext/users/klimakverna/development/output/testcase_6/model_ensembles/CMIP6/ssp370/102_ensemble_ssp370_statistics.csv"]
+            csv_files_for_boxplot = [f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_{testcase_no}/model_ensembles/CMIP5/rcp26/102_ensemble_rcp26_statistics.csv",
+                                    f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_{testcase_no}/model_ensembles/CMIP5/rcp45/102_ensemble_rcp45_statistics.csv",
+                                    f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_{testcase_no}/model_ensembles/CMIP6/ssp370/102_ensemble_ssp370_statistics.csv"]
             makeBoxplot(
                 config,
                 indicator_id,
                 csv_files_for_boxplot,
-                [f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_6/model_ensembles/{indicator_id}_ensemble_boxplot.png"],
+                [f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_{testcase_no}/model_ensembles/{indicator_id}_ensemble_boxplot.png"],
             )
