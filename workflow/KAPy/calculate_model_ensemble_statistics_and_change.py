@@ -1,32 +1,39 @@
 import csv
-import matplotlib.pyplot as plt
 from pathlib import Path
+import matplotlib.pyplot as plt
 from glob import glob
 import xarray as xr
 from xclim import ensembles as xe
 import yaml
 
-from save_change_to_netcdf import save_change_to_netcdf
-from plots import makeBoxplot
+from KAPy.save_change_to_netcdf import save_change_to_netcdf
+from KAPy.plots import makeBoxplot
 
 
 def calculate_ensemble_mean(
-    indicator_id: str, scenario: str, ensemble_filename: str | Path, config: dict, CMIP_version: None | int = None, region_id: str | None = None
-):
-    current_dir = Path(__file__).parent
-
+    output_path: str,
+    indicator_id: str,
+    scenario: str,
+    ensemble_filename: str,
+    config: dict,
+    CMIP_version: None | int = None,
+    region_id: str | None = None
+):    
     if "hist" not in scenario:
         if not region_id:
+            # testcase 1
             periods = [2, 3]
-            search_dir = current_dir / "../../results/7.netcdf"
+            search_dir = f"{output_path}/KAPy_results/7.netcdf"
             netcdf_files = glob(f"{search_dir}/**/{indicator_id}_{scenario}*.nc", recursive=True)
         else:
+            # testcase 6
             periods = [1, 2]
-            search_dir = "/lustre/storeC-ext/users/klimakverna/development/output/testcase_6"
+            search_dir = f"{output_path}/model_results"
             netcdf_files = glob(f"{search_dir}/**/{indicator_id}_{scenario}_??_region_{region_id}.nc", recursive=True)
     else:
+        # testcase 1
         periods = [1, 2, 3]
-        search_dir = current_dir / "../../results/4.ensstats"
+        search_dir = f"{output_path}/KAPy_results/4.ensstats"
 
         match CMIP_version:
             case 6:
@@ -90,7 +97,14 @@ def plot_and_save_spatial_plot(ensemble_change_filename: str, figure_filename: s
 
 
 def create_config(
-    path_to_config: Path, path_to_periods: Path, scenario: str, indicator_id: str, units: str, indicator_name: str, region_id: str | None = None
+    path_to_config: str,
+    path_to_periods: str,
+    testcase_no: int,
+    scenario: str,
+    indicator_id: str,
+    units: str,
+    indicator_name: str,
+    region_id: str | None = None
 ) -> tuple[dict, str, str | None, bool]:
     historical_period = False
     config = {}
@@ -104,7 +118,7 @@ def create_config(
         n_col_period = 4
     
     with open(path_to_config) as f:
-        config["ensembles"] = yaml.safe_load(f)["ensembles"]
+        config["ensembles"] = yaml.safe_load(f)[f"testcase_{testcase_no}"]["ensembles"]
 
     with open(path_to_periods) as f:
         periods_config = csv.reader(f, delimiter="\t")
@@ -193,7 +207,6 @@ def create_csv(netcdf_statistics_filename: str, csv_filename: str):
 
 
 if __name__ == "__main__":
-    current_dir = Path(__file__).parent
     scenarios = ["rcp26", "ssp370", "all"]
     indicator_id = "102"
     units = "kg m-2 s-1"
@@ -207,48 +220,50 @@ if __name__ == "__main__":
     # testcase 6
     calculate_change = False
     testcase_no = 6
-    region_id = "5"
+    region_id = "7"
 
-    path_to_config = current_dir / f"../../config/config_testcase_{testcase_no}.yaml"
-    path_to_periods = current_dir / f"../../config/periods_testcase_{testcase_no}.tsv"
+    base_path = "/lustre/storeC-ext/users/klimakverna/development"
+    output_base_path = f"{base_path}/output/testcase_{testcase_no}/model_ensembles"
+    path_to_config = f"{base_path}/Klimakverna-Pilot1/config/config.yaml"
+    path_to_periods = f"{base_path}/Klimakverna-Pilot1/config/testcase_{testcase_no}/periods.tsv"
     
     for scenario in scenarios:
         # Create config for this scenario/CMIP version, periods and indicator
-        config, scenarios, CMIP_version, historical_period = create_config(path_to_config, path_to_periods, scenario, indicator_id, units, indicator_name, region_id)
-
-        path_to_save_netcdf = current_dir / f"../../../../output/testcase_{testcase_no}/model_ensembles/CMIP{CMIP_version}"
+        config, scenarios, CMIP_version, historical_period = create_config(path_to_config, path_to_periods, testcase_no, scenario, indicator_id, units, indicator_name, region_id)
+        path_to_save_netcdf = f"{output_base_path}/CMIP{CMIP_version}"
         
         if scenario != "all":
             # Note on csv filenames:
             # scenario has to be the third word, since makeBoxplot uses the third word in the filename
             # for mapping the scenarios in the legend
-            statistics_filenames = [
-                path_to_save_netcdf / f"{scenario}/{indicator_id}_{scenario}_ensemble_statistics.nc" for scenario in scenarios
-            ]
-            statistics_csv_filenames = [
-                f"{path_to_save_netcdf}/{scenario}/{indicator_id}_ensemble_{scenario}_statistics.csv" for scenario in scenarios
-            ]
+            if region_id:
+                statistics_filenames = [f"{path_to_save_netcdf}/{scenario}/{indicator_id}_{scenario}_ensemble_statistics_region_{region_id}.nc" for scenario in scenarios]
+                statistics_csv_filenames = [f"{path_to_save_netcdf}/{scenario}/{indicator_id}_ensemble_{scenario}_statistics_region_{region_id}.csv" for scenario in scenarios]
+            else:
+                statistics_filenames = [f"{path_to_save_netcdf}/{scenario}/{indicator_id}_{scenario}_ensemble_statistics.nc" for scenario in scenarios]
+                statistics_csv_filenames = [f"{path_to_save_netcdf}/{scenario}/{indicator_id}_ensemble_{scenario}_statistics.csv" for scenario in scenarios]
+
             if calculate_change:
-                change_filenames = [
-                    path_to_save_netcdf / f"{scenario}/{indicator_id}_{scenario}_ensemble_change.nc" for scenario in scenarios
-                ]
+                change_filenames = [f"{path_to_save_netcdf}/{scenario}/{indicator_id}_{scenario}_ensemble_change.nc" for scenario in scenarios]
+           
             if historical_period:
-                historical_filename = path_to_save_netcdf / f"{indicator_id}_CMIP{CMIP_version}_historical_statistics.nc"
+                historical_filename = f"{path_to_save_netcdf}/{indicator_id}_CMIP{CMIP_version}_historical_statistics.nc"
                 historical_csv_filename = f"{path_to_save_netcdf}/{indicator_id}_CMIP{CMIP_version}_historical_statistics.csv"
 
             # Calculate ensemble statistics over models and save to netcdf
+            output_path = f"{base_path}/output/testcase_{testcase_no}"
             if historical_period:
-                if not historical_filename.exists():
-                    calculate_ensemble_mean(indicator_id, "historical", historical_filename, config, CMIP_version=CMIP_version)
+                if not Path(historical_filename).exists():
+                    calculate_ensemble_mean(output_path, indicator_id, "historical", historical_filename, config, CMIP_version=CMIP_version)
 
             for scenario, ensemble_statistics in zip(scenarios, statistics_filenames):
-                if not ensemble_statistics.exists():
-                    calculate_ensemble_mean(indicator_id, scenario, ensemble_statistics, config, region_id=region_id)
+                if not Path(ensemble_statistics).exists():
+                    calculate_ensemble_mean(output_path, indicator_id, scenario, ensemble_statistics, config, region_id=region_id)
 
             # Calculate ensemble change over models and save to netcdf
             if calculate_change:
                 for scenario, ensemble_change, ensemble_statistics in zip(scenarios, change_filenames, statistics_filenames):
-                    if not ensemble_change.exists():
+                    if not Path(ensemble_change).exists():
                         ensemble_stats_files = [str(ensemble_statistics), str(historical_filename)]
                         netcdf_filename = [str(ensemble_change)]
                         save_change_to_netcdf(config, indicator_id, scenario, ensemble_stats_files, netcdf_filename)
@@ -274,21 +289,34 @@ if __name__ == "__main__":
                 else:
                     df_indicator_mean = ds_scenario.indicator.mean(dim=["Yc", "Xc"]).to_dataframe()
                     df_indicator_mean.to_csv(ensemble_csv)
+            
+            if region_id:
+                plot_name = f"{path_to_save_netcdf}/{indicator_id}_CMIP{CMIP_version}_ensemble_boxplot_region_{region_id}.png"
+            else:
+                plot_name = f"{path_to_save_netcdf}/{indicator_id}_CMIP{CMIP_version}_ensemble_boxplot.png"
+            
+            makeBoxplot(
+                config,
+                indicator_id,
+                csv_files_for_boxplot,
+                [plot_name],
+            )
+        else:
+            # Antar at csvene exsisterer
+            if region_id:
+                plot_name = f"{output_base_path}/{indicator_id}_ensemble_boxplot_region_{region_id}.png"
+                csv_files_for_boxplot = [f"{output_base_path}/CMIP5/rcp26/{indicator_id}_ensemble_rcp26_statistics_region_{region_id}.csv",
+                                        f"{output_base_path}/CMIP5/rcp45/{indicator_id}_ensemble_rcp45_statistics_region_{region_id}.csv",
+                                        f"{output_base_path}/CMIP6/ssp370/{indicator_id}_ensemble_ssp370_statistics_region_{region_id}.csv"]
+            else:
+                plot_name = f"{output_base_path}/{indicator_id}_ensemble_boxplot.png"
+                csv_files_for_boxplot = [f"{output_base_path}/CMIP5/rcp26/{indicator_id}_ensemble_rcp26_statistics.csv",
+                                        f"{output_base_path}/CMIP5/rcp45/{indicator_id}_ensemble_rcp45_statistics.csv",
+                                        f"{output_base_path}/CMIP6/ssp370/{indicator_id}_ensemble_ssp370_statistics.csv"]
 
             makeBoxplot(
                 config,
                 indicator_id,
                 csv_files_for_boxplot,
-                [f"{path_to_save_netcdf}/{indicator_id}_CMIP{CMIP_version}_ensemble_boxplot.png"],
-            )
-        else:
-            # Antar at csvene exsisterer
-            csv_files_for_boxplot = [f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_{testcase_no}/model_ensembles/CMIP5/rcp26/102_ensemble_rcp26_statistics.csv",
-                                    f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_{testcase_no}/model_ensembles/CMIP5/rcp45/102_ensemble_rcp45_statistics.csv",
-                                    f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_{testcase_no}/model_ensembles/CMIP6/ssp370/102_ensemble_ssp370_statistics.csv"]
-            makeBoxplot(
-                config,
-                indicator_id,
-                csv_files_for_boxplot,
-                [f"/lustre/storeC-ext/users/klimakverna/development/output/testcase_{testcase_no}/model_ensembles/{indicator_id}_ensemble_boxplot.png"],
+                [plot_name],
             )

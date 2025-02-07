@@ -29,7 +29,7 @@ wf = KAPy.getWorkflow(config)
 def primaryVar_singular_rule(thisID):
     thisVarName = config['inputs'][thisID]['varName']
     rule:  
-        name: f'primaryVar_{thisID}_files'
+        name: f'primaryVar_{thisID}_files' # This name is used in DAG overview and overwrites the default name --> rule name will be without the prefix testcase_x_
         output:
             expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"), varName=thisVarName)
         input:
@@ -46,15 +46,16 @@ def primaryVar_plural_rule(thisID):
         name: f'primaryVar_{thisID}'
         input:
             list(wf['primVars'][thisID].keys())
-            
-for inpID in wf['primVars']:
-    primaryVar_singular_rule(inpID)
-    primaryVar_plural_rule(inpID)
 
-#Run all indicators    
-rule primaryVars:
-    input:
-        [list(thisInp.keys()) for thisInp in wf['primVars'].values()]
+if outDirs['variables']:         
+    for inpID in wf['primVars']:
+        primaryVar_singular_rule(inpID)
+        primaryVar_plural_rule(inpID)
+
+    #Run all indicators    
+    rule primaryVars:
+        input:
+            [list(thisInp.keys()) for thisInp in wf['primVars'].values()]
         
 
 # Secondary variables -------------------------
@@ -83,15 +84,16 @@ def secVar_plural_rule(thisID):
         name: f'secondaryVar_{thisID}'
         input:
             wf['secondaryVars'][thisID]['files']
-            
-for inpID in wf['secondaryVars'].keys():
-    secVar_singular_rule(inpID)
-    secVar_plural_rule(inpID)
 
-#Run all plurals    
-rule secondaryVars:
-    input:
-        [item for thisVar in wf['secondaryVars'].values() for item in thisVar['files'] ]
+if outDirs['variables']:
+    for inpID in wf['secondaryVars'].keys():
+        secVar_singular_rule(inpID)
+        secVar_plural_rule(inpID)
+
+    #Run all plurals    
+    rule secondaryVars:
+        input:
+            [item for thisVar in wf['secondaryVars'].values() for item in thisVar['files'] ]
         
 
 """
@@ -154,7 +156,7 @@ for varType in ['primVars','secVars']:
 def ind_singular_rule(thisID):
     thisInd=config['indicators'][thisID]
     rule:  
-        name: f'indicator_{thisID}_files'
+        name: f'indicator_{thisID}_files' # This name is used in DAG overview and overwrites the default name --> rule name will be without the prefix testcase_x_
         output:
             os.path.join(outDirs['indicators'],
                          f"{thisID}",f"{thisID}_{{stem}}.nc")
@@ -175,15 +177,16 @@ def ind_plural_rule(thisID):
         name: f'indicator_{thisID}'
         input:
             list(wf['indicators'][thisID])
-            
-for indID in config['indicators']:
-    ind_singular_rule(indID)
-    ind_plural_rule(indID)
 
-#Run all indicators    
-rule indicators:
-    input:
-        [f for thisInd in wf['indicators'].values() for f in thisInd['files']]
+if outDirs['indicators']:
+    for indID in config['indicators']:
+        ind_singular_rule(indID)
+        ind_plural_rule(indID)
+
+    #Run all indicators    
+    rule indicators:
+        input:
+            [f for thisInd in wf['indicators'].values() for f in thisInd['files']]
 
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
@@ -297,7 +300,7 @@ if outDirs['region']:
             KAPy.save_areal_mean_for_region_to_netcdf(config, wildcards.indID, wildcards.scenario, wildcards.period, wildcards.region, input, str(output))
 
 # All-------------------
-if config["region"]:
+if outDirs['region']:
     wf['all'] = [output_file for output_file in wf['all'] if "region" in output_file]
 else:
     wf['all'] = wf['all'][:-1]

@@ -58,7 +58,7 @@ def getWorkflow(config):
             inpTbl["stems"] = [re.search(thisInp["stemRegex"], os.path.basename(x)).group(1) for x in inpTbl["inpPath"]]
 
         for indicator_id in ind:
-            if ind[indicator_id]["time_binning"] == "periods" and len(sc) >= 3:
+            if ind[indicator_id]["time_binning"] == "periods" and "historical" in list(sc.keys()):
                 valid_periods = []
                 for period_id in config["periods"]:
                     valid_periods.append(
@@ -67,6 +67,7 @@ def getWorkflow(config):
                             arrow.get(str(config["periods"][period_id]["end"])),
                         ]
                     )
+
                 for idx, stem in enumerate(inpTbl["stems"]):
                     year = arrow.get(stem.split("_")[-1])
                     keep = False
@@ -252,6 +253,7 @@ def getWorkflow(config):
             input_list = inpTbl["inpPath"].to_list()
 
             if not region:
+                outDirs["region"] = ""
                 # Box plot
                 bxpFname = os.path.join(outDirs["plots"], f"{thisInd['id']}_boxplot.png")
                 pltDict[bxpFname] = asList[str(thisInd["id"])]
