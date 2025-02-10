@@ -24,7 +24,8 @@ def save_areal_mean_for_region_to_netcdf(config: dict, indicator_id: str, scenar
     indicator_name = config["indicators"][indicator_id]["variables"]
     region_datasets = {}
     polygons_file = gpd.read_file(config["region"][region]["shapefile"])
-    polygon = gpd.GeoSeries(data=polygons_file.iloc[int(region)].geometry, crs=polygons_file.crs)
+    this_region = polygons_file[polygons_file.Region == int(region)].geometry
+    polygon = gpd.GeoSeries(data=this_region, crs=polygons_file.crs)
 
     for input_file in inputs:
         dataset = xr.open_dataset(input_file)
@@ -32,7 +33,7 @@ def save_areal_mean_for_region_to_netcdf(config: dict, indicator_id: str, scenar
         dataset = dataset.rio.write_crs(projection)
         polygon = polygon.to_crs(projection)
         
-        mask = rasterio.features.geometry_mask([mapping(polygon.geometry[0])], out_shape=(len(dataset.Yc), len(dataset.Xc)), transform=dataset.rio.transform(), invert=True)
+        mask = rasterio.features.geometry_mask([mapping(polygon.geometry.iloc[0])], out_shape=(len(dataset.Yc), len(dataset.Xc)), transform=dataset.rio.transform(), invert=True)
         # all_touched=False by default, means "If False, only pixels whose center is within the polygon or that are selected by Bresenham’s line algorithm will be burned in"
         mask= xr.DataArray(mask, dims=("Yc", "Xc"))
         clipped_ds = dataset.where(mask, drop=True)
@@ -43,6 +44,9 @@ def save_areal_mean_for_region_to_netcdf(config: dict, indicator_id: str, scenar
 
     # Take mean over all bias adjustments
     dataset_mean = dataset_total[indicator_name].mean(dim=["realization"])
+    
+    # To save region dataset for ncview
+    # dataset_mean.to_netcdf(f"{output.split(indicator_id)[0]}/{indicator_id}_{scenario}_{period}_region_{region}_area.nc")
 
     # Take areal mean
     dataarray_areal_mean = dataset_mean.mean(dim=["Yc", "Xc"])

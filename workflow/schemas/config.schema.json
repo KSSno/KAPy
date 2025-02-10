@@ -19,8 +19,7 @@
                 "indicators",
                 "scenarios",
                 "periods",
-                "seasons",
-                "region"
+                "seasons"
             ],
             "additionalProperties": false,
             "properties": {
