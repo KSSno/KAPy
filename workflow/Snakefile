@@ -279,13 +279,14 @@ rule plots_boxplots:
 #         KAPy.makeSpatialplot(config,wildcards.indID,input,output)
 
 # Change in netcdf----------------------------
-rule save_change_to_netcdf:
-    input:
-        lambda wildcards: wf['netcdf'][os.path.join(outDirs['netcdf'], f"{wildcards.indicator}_{wildcards.scenario}_change_periods.nc")]
-    output:
-        os.path.join(outDirs['netcdf'], '{indID}_{es}_change_periods.nc')
-    run:
-        KAPy.save_change_to_netcdf(config, wildcards.indicator, wildcards.scenario, input, output)
+if outDirs['netcdf']:
+    rule save_change_to_netcdf:
+        input:
+            lambda wildcards: wf['netcdf'][os.path.join(outDirs['netcdf'], f"{wildcards.indicator}_{wildcards.scenario}_change_periods.nc")]
+        output:
+            os.path.join(outDirs['netcdf'], '{indicator}_{scenario}_change_periods.nc')
+        run:
+            KAPy.save_change_to_netcdf(config, wildcards.indicator, wildcards.scenario, input, output)
 
 # 30yr means for region-----------------------
 if outDirs['region']:
@@ -302,7 +303,8 @@ if outDirs['region']:
 if outDirs['region']:
     wf['all'] = [output_file for output_file in wf['all'] if "region" in output_file]
 else:
-    wf['all'] = wf['all'][:-1]
+    # wf['all'] = wf['all'][:-1]
+    wf['all'] = wf['all']
 
 rule all:
     input:
