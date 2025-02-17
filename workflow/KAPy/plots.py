@@ -80,7 +80,7 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
         index=["scenario", "periodID"], columns="ptileLbl", values="indicator"
     ).reset_index()
 
-    if config["region"]:
+    if "region" in config:
         limits = [-5, 25]
     else:
         limits = [2.7e-05, 5.7e-05]
