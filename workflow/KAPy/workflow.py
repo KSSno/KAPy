@@ -54,8 +54,8 @@ def getWorkflow(config):
         inpTbl = pd.DataFrame(glob.glob(thisInp["path"]), columns=["inpPath"])
 
         # Make into table and extract stems
-        if not region:
-            inpTbl["stems"] = [re.search(thisInp["stemRegex"], os.path.basename(x)).group(1) for x in inpTbl["inpPath"]]
+        #if not region:
+        inpTbl["stems"] = [re.search(thisInp["stemRegex"], os.path.basename(x)).group(1) for x in inpTbl["inpPath"]]
 
         for indicator_id in ind:
             if ind[indicator_id]["time_binning"] == "periods" and "historical" in list(sc.keys()):
