@@ -77,7 +77,7 @@ def getWorkflow(config):
                     if not keep:
                         inpTbl = inpTbl.drop([idx])
         inpTbl = inpTbl.reset_index(drop=True)
-
+        
         # Process inputs that have scenarios first
         if not region:
             pvList = []
@@ -225,7 +225,7 @@ def getWorkflow(config):
     else:
         outDirs["arealstats"] = ""
 
-    # Plots----------------------------------------------------
+    # Plots, region and netcdf ----------------------------------------------
     # Collate and process sources for plots
     def makeInputDict(d):
         inpTbl = pd.DataFrame(list(d.keys()), columns=["path"])
@@ -245,13 +245,13 @@ def getWorkflow(config):
     pltDict = {}
     netcdf_paths = {}
     region_paths = {}
+    csv_path = {}
     for thisInd in config["indicators"].values():
         # But what should we plot? It depends on the nature of the indicator
         # * Period-based indicators should plot the spatial map and the plots
         # * Yearly (or monthly) based indicators show a time series
         if thisInd["time_binning"] == "periods":
             input_list = inpTbl["inpPath"].to_list()
-
             if not region:
                 outDirs["region"] = ""
                 # Box plot
@@ -273,9 +273,12 @@ def getWorkflow(config):
                 outDirs["netcdf"] = ""
                 for scenario in sc:
                     for period in periods:
-                        for region_key in region:
-                            output_file = os.path.join(outDirs["region"], f"{thisInd['id']}_{scenario}_{periods[period]['short_name']}_region_{region[region_key]['id']}.nc")
-                            region_paths[output_file] = [input_file for input_file in input_list if scenario in input_file]
+                        if (scenario == "historical" and periods[period]["short_name"] == "hist") or (scenario in ["ssp370", "rcp26", "rcp45"] and periods[period]["short_name"] in ["nf", "ff"]):
+                            for region_key in region:
+                                output_file = os.path.join(outDirs["region"], f"{thisInd['id']}_{scenario}_{periods[period]['short_name']}_region_{region[region_key]['id']}.nc")
+                                region_paths[output_file] = [input_file for input_file in input_list if (periods[period]["short_name"] in input_file) or (scenario in input_file)]
+                if "csv" in outDirs:
+                    csv_path[os.path.join(outDirs["csv"], f"{thisInd['id']}_region_{region[region_key]['id']}_timeseries.csv")] = [*region_paths] 
 
         elif thisInd["time_binning"] in ["years", "months"]:
             # Time series plot
@@ -303,6 +306,7 @@ def getWorkflow(config):
             "arealstats": {},
             "plots": {},
             "region": region_paths,
+            "csv": csv_path
             }
     # Need to create an "all" dict as well containing all targets in the workflow
     allList = []

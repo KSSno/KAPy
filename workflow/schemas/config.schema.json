@@ -67,10 +67,11 @@
                         "plots",
                         "netcdf"
                     ]
-                },
+                },                
                 {
                     "required": [
-                        "region"
+                        "region",
+                        "csv"
                     ]
                 }
             ],
@@ -106,6 +107,10 @@
                 },
                 "region": {
                     "description": "Directory for storing output netcdfs for region cutouts.",
+                    "type": "string"
+                },
+               "csv": {
+                    "description": "Directory for storing output in csv format for region cutouts.",
                     "type": "string"
                 }
             }

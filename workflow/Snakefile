@@ -290,7 +290,6 @@ if outDirs['netcdf']:
 
 # 30yr means for region-----------------------
 if outDirs['region']:
-
     rule save_areal_mean_for_region_to_netcdf:
         input:
             lambda wildcards: wf['region'][os.path.join(outDirs["region"], f'{wildcards.indID}_{wildcards.scenario}_{wildcards.period}_region_{wildcards.region}.nc')]
@@ -298,10 +297,21 @@ if outDirs['region']:
             os.path.join(outDirs['region'], '{indID}_{scenario}_{period}_region_{region}.nc')
         run:
             KAPy.save_areal_mean_for_region_to_netcdf(config, wildcards.indID, wildcards.scenario, wildcards.period, wildcards.region, input, str(output))
+                    
+if outDirs["csv"]:
+    rule timeseries_netcdf_to_csv:
+        input:
+            lambda wildcards: wf['csv'][os.path.join(outDirs["csv"], f'{wildcards.indID}_region_{wildcards.region}.csv')]
+        output:
+            os.path.join(outDirs['csv'], '{indID}_region_{region}.csv')
+        run:
+            KAPy.timeseries_netcdf_to_csv(config, wildcards.indID, wildcards.region, input, str(output))
 
 # All-------------------
 if outDirs['region']:
     wf['all'] = [output_file for output_file in wf['all'] if "region" in output_file]
+    if outDirs["csv"]:
+        wf["all"].extend([output_file for output_file in wf['all'] if "csv" in output_file])
 else:
     wf['all'] = wf['all']
 
