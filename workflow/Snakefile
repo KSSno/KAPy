@@ -46,7 +46,7 @@ def primaryVar_plural_rule(thisID):
         input:
             list(wf['primVars'][thisID].keys())
 
-if outDirs['variables']:         
+if "variables" in outDirs and outDirs['variables']:         
     for inpID in wf['primVars']:
         primaryVar_singular_rule(inpID)
         primaryVar_plural_rule(inpID)
@@ -84,7 +84,7 @@ def secVar_plural_rule(thisID):
         input:
             wf['secondaryVars'][thisID]['files']
 
-if outDirs['variables']:
+if "variables" in outDirs and outDirs['variables']:
     for inpID in wf['secondaryVars'].keys():
         secVar_singular_rule(inpID)
         secVar_plural_rule(inpID)
@@ -177,7 +177,7 @@ def ind_plural_rule(thisID):
         input:
             list(wf['indicators'][thisID])
 
-if outDirs['indicators']:
+if "indicators" in outDirs and outDirs['indicators']:
     for indID in config['indicators']:
         ind_singular_rule(indID)
         ind_plural_rule(indID)
@@ -207,7 +207,7 @@ if config['outputGrid']['regriddingEngine']!='None':
 # Enssemble Statistics ---------------------------------
 # Now we can combine them into ensembles
 #Plural rule
-if outDirs['ensstats']:
+if "ensstats" in outDirs and outDirs['ensstats']:
 
     rule ensstats:
         input:
@@ -228,7 +228,7 @@ if outDirs['ensstats']:
 #individual ensemble members - these options can be turned on and off as required
 #via the configuration options. 
 #Plural rule
-if outDirs['arealstats']:
+if "arealstats" in outDirs and outDirs['arealstats']:
 
     rule arealstats:
         input:
@@ -279,7 +279,7 @@ rule plots_boxplots:
 #         KAPy.makeSpatialplot(config,wildcards.indID,input,output)
 
 # Change in netcdf----------------------------
-if outDirs['netcdf']:
+if "netcdf" in outDirs and outDirs['netcdf']:
     rule save_change_to_netcdf:
         input:
             lambda wildcards: wf['netcdf'][os.path.join(outDirs['netcdf'], f"{wildcards.indicator}_{wildcards.scenario}_change_periods.nc")]
@@ -289,7 +289,7 @@ if outDirs['netcdf']:
             KAPy.save_change_to_netcdf(config, wildcards.indicator, wildcards.scenario, input, output)
 
 # 30yr means for region-----------------------
-if outDirs['region']:
+if "region" in outDirs and outDirs['region']:
     rule save_areal_mean_for_region_to_netcdf:
         input:
             lambda wildcards: wf['region'][os.path.join(outDirs["region"], f'{wildcards.indID}_{wildcards.scenario}_{wildcards.period}_region_{wildcards.region}.nc')]
@@ -298,7 +298,7 @@ if outDirs['region']:
         run:
             KAPy.save_areal_mean_for_region_to_netcdf(config, wildcards.indID, wildcards.scenario, wildcards.period, wildcards.region, input, str(output))
                     
-if outDirs["csv"]:
+if "csv" in outDirs and outDirs["csv"]:
     rule timeseries_netcdf_to_csv:
         input:
             lambda wildcards: wf['csv'][os.path.join(outDirs["csv"], f'{wildcards.indID}_region_{wildcards.region}.csv')]
@@ -308,7 +308,7 @@ if outDirs["csv"]:
             KAPy.timeseries_netcdf_to_csv(config, wildcards.indID, wildcards.region, input, str(output))
 
 # All-------------------
-if outDirs['region']:
+if "region" in outDirs and outDirs['region']:
     wf['all'] = [output_file for output_file in wf['all'] if "region" in output_file]
     if outDirs["csv"]:
         wf["all"].extend([output_file for output_file in wf['all'] if "csv" in output_file])

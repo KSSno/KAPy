@@ -15,7 +15,7 @@ def save_areal_mean_for_region_to_netcdf(config: dict, indicator_id: str, scenar
         config: configuration from KAPy that contains information from all configuration files
         indicator_id: which parameter in the input file to calculate ensemble statistics for
         scenario: ssp370 for CMIP6 and rcp26 and rcp45 for CMIP5 inputs
-        period: near future or far future
+        period: historical, near future or far future
         region: id for region in shapefile defined in configuration file to cut out of input file and calculate ensemble statistics for
         inputs: original datasets with 30 year means
         output: path to output directory including netcdf file name
@@ -40,7 +40,12 @@ def save_areal_mean_for_region_to_netcdf(config: dict, indicator_id: str, scenar
         mask= xr.DataArray(mask, dims=("Yc", "Xc"))
         clipped_ds = dataset.where(mask, drop=True)
         region_datasets[input_file] = clipped_ds
-    datasets = [region_datasets[filename] for filename in region_datasets if period in filename and period != "hist"] 
+
+    if period == "hist":
+        period_name = "ref_period"
+    else:
+        period_name = period
+    datasets = [region_datasets[filename] for filename in region_datasets if period_name in filename]
 
     if not datasets: # doesn't work for daily datasets, have to extract time period
         for idx in range(1, len(config["periods"])+1):
@@ -68,10 +73,12 @@ def save_areal_mean_for_region_to_netcdf(config: dict, indicator_id: str, scenar
         dataset_mean.to_netcdf(f"{output.split(indicator_id)[0]}/{indicator_id}_{scenario}_{period}_region_{region}_area.nc")
 
         # Take areal mean
-        dataarray_areal_mean = dataset_mean.mean(dim=["Yc", "Xc"])
+        dataarray_areal_mean = dataset_mean.mean(dim=["Yc", "Xc"])    
         dataarray_areal_mean = dataarray_areal_mean.rename("indicator_mean")
         dataarray_areal_mean = dataarray_areal_mean.rename({"time": "periodID"})
-
+        dataarray_areal_mean = dataarray_areal_mean.to_dataset()
+        dataarray_areal_mean = dataarray_areal_mean.assign({"scenario": [scenario]})
+        dataarray_areal_mean = dataarray_areal_mean.drop("projection_utm")
         dataarray_areal_mean.to_netcdf(output)
 
         limit = [-15, 15]

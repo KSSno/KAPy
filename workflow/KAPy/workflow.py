@@ -56,27 +56,30 @@ def getWorkflow(config):
         # Make into table and extract stems
         #if not region:
         inpTbl["stems"] = [re.search(thisInp["stemRegex"], os.path.basename(x)).group(1) for x in inpTbl["inpPath"]]
+        try:
+            for indicator_id in ind:
+                if ind[indicator_id]["time_binning"] == "periods" and "historical" in list(sc.keys()):
+                    valid_periods = []
+                    for period_id in config["periods"]:
+                        valid_periods.append(
+                            [
+                                arrow.get(str(config["periods"][period_id]["start"])),
+                                arrow.get(str(config["periods"][period_id]["end"])),
+                            ]
+                        )
 
-        for indicator_id in ind:
-            if ind[indicator_id]["time_binning"] == "periods" and "historical" in list(sc.keys()):
-                valid_periods = []
-                for period_id in config["periods"]:
-                    valid_periods.append(
-                        [
-                            arrow.get(str(config["periods"][period_id]["start"])),
-                            arrow.get(str(config["periods"][period_id]["end"])),
-                        ]
-                    )
-
-                for idx, stem in enumerate(inpTbl["stems"]):
-                    year = arrow.get(stem.split("_")[-1])
-                    keep = False
-                    for valid_period in valid_periods:
-                        if valid_period[0] <= year <= valid_period[-1]:
-                            keep = True
-                    if not keep:
-                        inpTbl = inpTbl.drop([idx])
-        inpTbl = inpTbl.reset_index(drop=True)
+                    for idx, stem in enumerate(inpTbl["stems"]):
+                        year = arrow.get(stem.split("_")[-1])
+                        keep = False
+                        for valid_period in valid_periods:
+                            if year.is_between(valid_period[0], valid_period[-1], "[]"):
+                                keep = True
+                        if not keep:
+                            inpTbl = inpTbl.drop([idx])
+            inpTbl = inpTbl.reset_index(drop=True)
+        except arrow.ParserError:
+            # No year in the stem for 30y mean input files for testcase 8
+            continue
         
         # Process inputs that have scenarios first
         if not region:
@@ -276,7 +279,20 @@ def getWorkflow(config):
                         if (scenario == "historical" and periods[period]["short_name"] == "hist") or (scenario in ["ssp370", "rcp26", "rcp45"] and periods[period]["short_name"] in ["nf", "ff"]):
                             for region_key in region:
                                 output_file = os.path.join(outDirs["region"], f"{thisInd['id']}_{scenario}_{periods[period]['short_name']}_region_{region[region_key]['id']}.nc")
-                                region_paths[output_file] = [input_file for input_file in input_list if (periods[period]["short_name"] in input_file) or (scenario in input_file)]
+                                
+                                if scenario == "historical" and periods[period]["short_name"] == "hist":
+                                    ref_period = False
+                                    for input_file in input_list:
+                                        if "ref_period" in input_file:
+                                            ref_period = True
+
+                                    if ref_period:
+                                        region_paths[output_file] = [input_file for input_file in input_list if ("ref_period" in input_file)]
+                                    else:
+                                        region_paths[output_file] = [input_file for input_file in input_list if (periods[period]["short_name"] in input_file) or (scenario in input_file) ]
+                                else:
+                                    region_paths[output_file] = [input_file for input_file in input_list if (periods[period]["short_name"] in input_file) or (scenario in input_file)]
+
                 if "csv" in outDirs:
                     csv_path[os.path.join(outDirs["csv"], f"{thisInd['id']}_region_{region[region_key]['id']}_timeseries.csv")] = [*region_paths] 
 
