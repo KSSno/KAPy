@@ -310,7 +310,7 @@ if "csv" in outDirs and outDirs["csv"]:
 # All-------------------
 if "region" in outDirs and outDirs['region']:
     wf['all'] = [output_file for output_file in wf['all'] if "region" in output_file]
-    if outDirs["csv"]:
+    if "csv" in outDirs and outDirs["csv"]:
         wf["all"].extend([output_file for output_file in wf['all'] if "csv" in output_file])
 else:
     wf['all'] = wf['all']
