@@ -1,5 +1,6 @@
 import csv
 from pathlib import Path
+from typing import Literal
 import matplotlib.pyplot as plt
 from glob import glob
 import xarray as xr
@@ -105,7 +106,7 @@ def create_config(
     units: str,
     indicator_name: str,
     region_id: str | None = None
-) -> tuple[dict, str, str | None, bool]:
+) -> tuple[dict[str, dict[str, str]], list[str], Literal[5, 6] | None, bool]:
     historical_period = False
     config = {}
     config["scenarios"] = {}
@@ -149,6 +150,7 @@ def create_config(
 
     CMIP5_scenarios = ["rcp26", "rcp45"]
     CMIP6_scenarios = ["ssp370"]
+    scenarios = []
     if scenario == "all":
         CMIP_version = None
         scenarios = CMIP5_scenarios + CMIP6_scenarios
@@ -208,6 +210,7 @@ def create_csv(netcdf_statistics_filename: str, csv_filename: str):
 
 if __name__ == "__main__":
     scenarios = ["rcp26", "ssp370", "all"]
+    CMIP_scenarios = {"CMIP5": ["rcp26", "rcp45"], "CMIP6": ["ssp370"]}
     indicator_id = "102"
     units = "kg m-2 s-1"
     indicator_name = "Annual mean precipitation by period"
@@ -278,8 +281,6 @@ if __name__ == "__main__":
             csv_files_for_boxplot = [filename for filename in statistics_csv_filenames]
             if historical_period:
                 csv_files_for_boxplot.append(historical_csv_filename)
-
-            if historical_period:
                 create_csv(historical_filename, historical_csv_filename)
             
             for scenario, ensemble_statistics, ensemble_csv in zip(scenarios, statistics_filenames, statistics_csv_filenames):
@@ -287,8 +288,9 @@ if __name__ == "__main__":
                 if region_id:
                     ds_scenario.indicator.to_dataframe().to_csv(ensemble_csv)
                 else:
-                    df_indicator_mean = ds_scenario.indicator.mean(dim=["Yc", "Xc"]).to_dataframe()
-                    df_indicator_mean.to_csv(ensemble_csv)
+                    ds_to_csv = ds_scenario.indicator.mean(dim=["Yc", "Xc"])
+                    ds_to_csv = ds_to_csv.to_dataframe()
+                    ds_to_csv.to_csv(ensemble_csv)
             
             if region_id:
                 plot_name = f"{path_to_save_netcdf}/{indicator_id}_CMIP{CMIP_version}_ensemble_boxplot_region_{region_id}.png"
@@ -305,14 +307,45 @@ if __name__ == "__main__":
             # Antar at csvene exsisterer
             if region_id:
                 plot_name = f"{output_base_path}/{indicator_id}_ensemble_boxplot_region_{region_id}.png"
-                csv_files_for_boxplot = [f"{output_base_path}/CMIP5/rcp26/{indicator_id}_ensemble_rcp26_statistics_region_{region_id}.csv",
-                                        f"{output_base_path}/CMIP5/rcp45/{indicator_id}_ensemble_rcp45_statistics_region_{region_id}.csv",
-                                        f"{output_base_path}/CMIP6/ssp370/{indicator_id}_ensemble_ssp370_statistics_region_{region_id}.csv"]
+                
+                csv_files_for_boxplot = []
+                nc_files_for_csv = []
+                for CMIP_version, scenarios in CMIP_scenarios.items():
+                    filename_nc = [f"{output_base_path}/{CMIP_version}/{scenario}/{indicator_id}_{scenario}_ensemble_statistics_region_{region_id}.nc" for scenario in scenarios]
+                    nc_files_for_csv.extend(filename_nc)
+                    filename_csv = [f"{output_base_path}/{CMIP_version}/{scenario}/{indicator_id}_ensemble_{scenario}_statistics_region_{region_id}.csv" for scenario in scenarios]
+                    csv_files_for_boxplot.extend(filename_csv)
+
+                # Combine sceanrios in one output csv with columns 
+                datasets = [xr.open_dataset(filename) for filename in nc_files_for_csv]
+                scenarios = [scenario for scenario in CMIP_scenarios.values() for scenario in scenario]
+                ds_csv = xr.Dataset()
+                variable_names = ["upper_percentile", "middle_percentile", "lower_percentile"]
+                for percentile, name in zip(datasets[0].percentiles, variable_names):
+                    data= [
+                        datasets[0].indicator.sel(percentiles=percentile).data, 
+                        datasets[1].indicator.sel(percentiles=percentile).data, 
+                        datasets[2].indicator.sel(percentiles=percentile).data
+                        ]
+
+                    da = xr.DataArray(data,
+                                    dims=["scenario", "period"],
+                                    coords={
+                                        "scenario": scenarios,
+                                        "period": ["nf", "ff"],
+                                        "region": region_id
+                                    })
+
+
+                    ds_csv  = ds_csv.assign(**{name: da})
+
+                ds_csv.to_dataframe(dim_order=["scenario", "period"]).to_csv(f"{output_base_path}/ensemble_statistics_scenarios_region_{region_id}.csv")
             else:
                 plot_name = f"{output_base_path}/{indicator_id}_ensemble_boxplot.png"
-                csv_files_for_boxplot = [f"{output_base_path}/CMIP5/rcp26/{indicator_id}_ensemble_rcp26_statistics.csv",
-                                        f"{output_base_path}/CMIP5/rcp45/{indicator_id}_ensemble_rcp45_statistics.csv",
-                                        f"{output_base_path}/CMIP6/ssp370/{indicator_id}_ensemble_ssp370_statistics.csv"]
+                csv_files_for_boxplot = []
+                for CMIP_version, scenarios in CMIP_scenarios.items():
+                    filename_csv = [f"{output_base_path}/{CMIP_version}/{scenario}/{indicator_id}_ensemble_{scenario}_statistics.csv" for scenario in scenarios]
+                    csv_files_for_boxplot.extend(filename_csv)
 
             makeBoxplot(
                 config,
@@ -320,3 +353,4 @@ if __name__ == "__main__":
                 csv_files_for_boxplot,
                 [plot_name],
             )
+        

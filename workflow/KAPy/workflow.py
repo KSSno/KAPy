@@ -54,30 +54,33 @@ def getWorkflow(config):
         inpTbl = pd.DataFrame(glob.glob(thisInp["path"]), columns=["inpPath"])
 
         # Make into table and extract stems
-        if not region:
-            inpTbl["stems"] = [re.search(thisInp["stemRegex"], os.path.basename(x)).group(1) for x in inpTbl["inpPath"]]
+        #if not region:
+        inpTbl["stems"] = [re.search(thisInp["stemRegex"], os.path.basename(x)).group(1) for x in inpTbl["inpPath"]]
+        try:
+            for indicator_id in ind:
+                if ind[indicator_id]["time_binning"] == "periods" and "historical" in list(sc.keys()):
+                    valid_periods = []
+                    for period_id in config["periods"]:
+                        valid_periods.append(
+                            [
+                                arrow.get(str(config["periods"][period_id]["start"])),
+                                arrow.get(str(config["periods"][period_id]["end"])),
+                            ]
+                        )
 
-        for indicator_id in ind:
-            if ind[indicator_id]["time_binning"] == "periods" and "historical" in list(sc.keys()):
-                valid_periods = []
-                for period_id in config["periods"]:
-                    valid_periods.append(
-                        [
-                            arrow.get(str(config["periods"][period_id]["start"])),
-                            arrow.get(str(config["periods"][period_id]["end"])),
-                        ]
-                    )
-
-                for idx, stem in enumerate(inpTbl["stems"]):
-                    year = arrow.get(stem.split("_")[-1])
-                    keep = False
-                    for valid_period in valid_periods:
-                        if valid_period[0] <= year <= valid_period[-1]:
-                            keep = True
-                    if not keep:
-                        inpTbl = inpTbl.drop([idx])
-        inpTbl = inpTbl.reset_index(drop=True)
-
+                    for idx, stem in enumerate(inpTbl["stems"]):
+                        year = arrow.get(stem.split("_")[-1])
+                        keep = False
+                        for valid_period in valid_periods:
+                            if year.is_between(valid_period[0], valid_period[-1], "[]"):
+                                keep = True
+                        if not keep:
+                            inpTbl = inpTbl.drop([idx])
+            inpTbl = inpTbl.reset_index(drop=True)
+        except arrow.ParserError:
+            # No year in the stem for 30y mean input files for testcase 8
+            continue
+        
         # Process inputs that have scenarios first
         if not region:
             pvList = []
@@ -225,7 +228,7 @@ def getWorkflow(config):
     else:
         outDirs["arealstats"] = ""
 
-    # Plots----------------------------------------------------
+    # Plots, region and netcdf ----------------------------------------------
     # Collate and process sources for plots
     def makeInputDict(d):
         inpTbl = pd.DataFrame(list(d.keys()), columns=["path"])
@@ -245,13 +248,13 @@ def getWorkflow(config):
     pltDict = {}
     netcdf_paths = {}
     region_paths = {}
+    csv_path = {}
     for thisInd in config["indicators"].values():
         # But what should we plot? It depends on the nature of the indicator
         # * Period-based indicators should plot the spatial map and the plots
         # * Yearly (or monthly) based indicators show a time series
         if thisInd["time_binning"] == "periods":
             input_list = inpTbl["inpPath"].to_list()
-
             if not region:
                 outDirs["region"] = ""
                 # Box plot
@@ -273,9 +276,25 @@ def getWorkflow(config):
                 outDirs["netcdf"] = ""
                 for scenario in sc:
                     for period in periods:
-                        for region_key in region:
-                            output_file = os.path.join(outDirs["region"], f"{thisInd['id']}_{scenario}_{periods[period]['short_name']}_region_{region[region_key]['id']}.nc")
-                            region_paths[output_file] = [input_file for input_file in input_list if scenario in input_file]
+                        if (scenario == "historical" and periods[period]["short_name"] == "hist") or (scenario in ["ssp370", "rcp26", "rcp45"] and periods[period]["short_name"] in ["nf", "ff"]):
+                            for region_key in region:
+                                output_file = os.path.join(outDirs["region"], f"{thisInd['id']}_{scenario}_{periods[period]['short_name']}_region_{region[region_key]['id']}.nc")
+                                
+                                if scenario == "historical" and periods[period]["short_name"] == "hist":
+                                    ref_period = False
+                                    for input_file in input_list:
+                                        if "ref_period" in input_file:
+                                            ref_period = True
+
+                                    if ref_period:
+                                        region_paths[output_file] = [input_file for input_file in input_list if ("ref_period" in input_file)]
+                                    else:
+                                        region_paths[output_file] = [input_file for input_file in input_list if (periods[period]["short_name"] in input_file) or (scenario in input_file) ]
+                                else:
+                                    region_paths[output_file] = [input_file for input_file in input_list if (periods[period]["short_name"] in input_file) or (scenario in input_file)]
+
+                if "csv" in outDirs:
+                    csv_path[os.path.join(outDirs["csv"], f"{thisInd['id']}_region_{region[region_key]['id']}_timeseries.csv")] = [*region_paths] 
 
         elif thisInd["time_binning"] in ["years", "months"]:
             # Time series plot
@@ -303,6 +322,7 @@ def getWorkflow(config):
             "arealstats": {},
             "plots": {},
             "region": region_paths,
+            "csv": csv_path
             }
     # Need to create an "all" dict as well containing all targets in the workflow
     allList = []
